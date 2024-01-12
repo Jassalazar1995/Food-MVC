@@ -1,34 +1,67 @@
 const express = require('express')
+const methodOverride = require('method-override')
 
 const app = express()
 
 const fruits = require('./models/fruits')
 
-PORT = 5000
+const PORT = 5000
 
-// set up the engine
+// load our engine
 const jsxEngine = require('jsx-view-engine')
 
-//call our engine
+// format our POST request data 
+app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'))
+
+// setup our engine
 app.set('view engine', 'jsx');
 app.engine('jsx', jsxEngine());
 
 // "root" route
-app.get('/', (req,res) => {
-    res.send('Hello world')
+app.get('/', (req, res) => {
+    res.send('Hello World!')
 })
 
 // "index" route
-app.get('/fruits',(req,res) =>{
+app.get('/fruits', (req, res) => {
     res.render('Index', { fruits: fruits })
 })
 
-// "show" route
-app.get('/fruits/:index', (req,res) => {
-    res.render('Show', {fruit: fruits[req.params.index]})
-    //res.send(fruits[req.params.index])
+// "new" route
+app.get('/fruits/new', (req, res) => {
+    res.render('New')
 })
 
-app.listen(PORT,()=>{
-    console.log('listeninon port ' + PORT)
+// "show" route
+app.get('/fruits/:index', (req, res) => {
+    res.render('Show', { fruit: fruits[req.params.index], index: req.params.index })
+    // res.send(fruits[req.params.index])
+})
+
+// "create" route
+app.post('/fruits', (req, res) => {
+    console.log(req.body)
+    if (req.body.readyToEat === 'on') {
+        req.body.readyToEat = true
+    } else {
+        req.body.readyToEat = false
+    }
+    fruits.push(req.body)
+    res.redirect('/fruits')
+})
+
+// "edit" route
+app.get('/fruits/:index/edit', (req, res) => {
+    res.render('Edit', { fruit: fruits[req.params.index] })
+})
+
+// "destroy" route
+app.delete('/fruits/:index', (req,res) => {
+    console.log('deleted')
+    res.send('deleted')
+})
+
+app.listen(PORT, () => {
+    console.log('Listening on port: ' + PORT)
 })
